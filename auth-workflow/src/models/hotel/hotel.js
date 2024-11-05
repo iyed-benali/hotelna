@@ -52,7 +52,7 @@ const HotelSchema = new Schema({
     required: true,
   },
   hotelPhone: {
-    type: Number,
+    type: String,
     required: true,
   },
   hotelEmail: {

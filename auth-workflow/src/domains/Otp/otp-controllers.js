@@ -1,22 +1,24 @@
 const OTP = require("../../models/OTP/otp");
 const Profile = require("../../models/Auth/auth");
 const mailSender = require("../../utils/mailsender");
-const bcrypt = require("bcryptjs");
-const { generateAndHashOTP } = require("../../utils/generate-hash-otp");
 const { createErrorResponse } = require("../../utils/error-handle");
+const bcrypt = require("bcryptjs"); 
 
 exports.verifyOTP = async (req, res) => {
   try {
-    const { userID, otp } = req.body; // Use userID to match the correct record
-    const otpRecord = await OTP.findOne({ userID }); // Adjust to match userID field
+    const { userID, otp } = req.body;
+    const otpRecord = await OTP.findOne({ userID });
 
-    if (!otpRecord) return res.status(400).json(createErrorResponse("Invalid or expired OTP", 400));
+    if (!otpRecord || otpRecord.expiresAt < Date.now()) {
+      return res.status(400).json(createErrorResponse("Invalid or expired OTP", 400));
+    }
 
-    const isMatch = await bcrypt.compare(otp, otpRecord.otp);
-    if (!isMatch) return res.status(400).json(createErrorResponse("Invalid or expired OTP", 400));
+    if (otp !== otpRecord.otp) {
+      return res.status(400).json(createErrorResponse("Invalid OTP", 400));
+    }
 
-    await Profile.findByIdAndUpdate(userID, { verified: true }); // Correct field for verification
-    await OTP.deleteMany({ userID }); // Delete all OTPs related to the user
+    await Profile.findByIdAndUpdate(userID, { verified: true });
+    await OTP.deleteMany({ userID });
 
     res.status(200).json({ message: "Account verified successfully" });
   } catch (error) {
@@ -24,32 +26,27 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-
-
 exports.resendOTP = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await Profile.findOne({ email });
     if (!user) return res.status(404).json(createErrorResponse("User not found", 404));
 
-    // Check for the latest OTP record
     const latestOtpRecord = await OTP.findOne({ userID: user._id }).sort({ createdAt: -1 });
-
-    // If there is a record and it was created less than a minute ago
     if (latestOtpRecord && Date.now() - latestOtpRecord.createdAt < 60 * 1000) {
       return res.status(429).json(createErrorResponse("Please wait at least 1 minute before requesting a new OTP", 429));
     }
 
-    // Delete any existing OTPs
     await OTP.deleteMany({ userID: user._id });
 
-    const { otp, hashedOtp } = await generateAndHashOTP();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
+    const expiresAt = Date.now() + 5 * 60 * 1000; // Set expiration time for 5 minutes
 
     const newOtpRecord = new OTP({
       userID: user._id,
-      otp: hashedOtp,
-      expiresAt: Date.now() + 5 * 60 * 1000, // Set expiration time for 5 minutes
-      type: 'emailVerification', // Set the type of OTP
+      otp,
+      expiresAt,
+      type: 'emailVerification',
     });
 
     await newOtpRecord.save();
@@ -61,19 +58,18 @@ exports.resendOTP = async (req, res) => {
   }
 };
 
-
-
 exports.requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await Profile.findOne({ email });
     if (!user) return res.status(404).json(createErrorResponse("Email not found", 404));
 
-    const { otp, hashedOtp } = await generateAndHashOTP();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
+    const expiresAt = Date.now() + 5 * 60 * 1000; // Set expiration time for 5 minutes
 
     await OTP.findOneAndUpdate(
-      { userID: user._id, type: 'passwordReset' }, // Adjusted to find by userID and type
-      { otp: hashedOtp, expiresAt: Date.now() + 5 * 60 * 1000, createdAt: Date.now() },
+      { userID: user._id, type: 'passwordReset' },
+      { otp, expiresAt, createdAt: Date.now() },
       { upsert: true }
     );
 
@@ -88,13 +84,16 @@ exports.verifyPasswordResetOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
 
-    const otpRecord = await OTP.findOne({ userID: userId, type: 'passwordReset' }); // Adjusted to find by userID and type
-    if (!otpRecord) return res.status(400).json(createErrorResponse("Invalid or expired OTP", 400));
+    const otpRecord = await OTP.findOne({ userID: userId, type: 'passwordReset' });
+    if (!otpRecord || otpRecord.expiresAt < Date.now()) {
+      return res.status(400).json(createErrorResponse("Invalid or expired OTP", 400));
+    }
 
-    const isMatch = await bcrypt.compare(otp, otpRecord.otp);
-    if (!isMatch) return res.status(400).json(createErrorResponse("Invalid or expired OTP", 400));
+    if (otp !== otpRecord.otp) {
+      return res.status(400).json(createErrorResponse("Invalid OTP", 400));
+    }
 
-    await OTP.deleteMany({ userID: userId, type: 'passwordReset' }); // Adjusted to delete by userID and type
+    await OTP.deleteMany({ userID: userId, type: 'passwordReset' });
     res.status(200).json({ message: "OTP verified, proceed to reset password" });
   } catch (error) {
     res.status(500).json(createErrorResponse("Server error", 500));

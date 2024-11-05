@@ -5,8 +5,8 @@ const verifyAdmin = require("../../middlwares/verify-admin");
 
 // Route to create a new hotel
 router.post("/create", verifyAdmin, createHotel);
-router.get("/hotel-by-id",getHotelById)
-router.get("/hotel-by-code",getHotelByCode)
+router.get("/hotel-by-id/:id",getHotelById)
+router.get("/hotel-by-code/:code",getHotelByCode)
 router.get("/hotel-locations",getAllHotelLocations)
 
 module.exports = router;

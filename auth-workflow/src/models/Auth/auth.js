@@ -43,7 +43,7 @@ const ProfileSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["ADMIN", "CLIENT","MACHINE-OWNER"],
+    enum: ["ADMIN", "CLIENT","HOTEL-OWNER"],
     default: "CLIENT",
   },
   verified: {
