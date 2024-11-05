@@ -5,10 +5,11 @@ const mailSender = require("../../utils/mailsender");
 const bcrypt = require("bcryptjs");
 const { generateAndHashOTP } = require("../../utils/generate-hash-otp");
 const {createErrorResponse} = require('../../utils/error-handle')
+const jwt = require("jsonwebtoken");
 
 // Register function
 const register = async (req, res) => {
-  const { username, firstName, lastName, email, phone, password } = req.body;
+  const { username, firstName, lastName, email, phone, password,role } = req.body;
 
   try {
     const existingProfile = await Profile.findOne({ email });
@@ -26,6 +27,7 @@ const register = async (req, res) => {
       email,
       phone,
       password: hashedPassword,
+      role:role
     });
     await newProfile.save();
 
@@ -34,8 +36,8 @@ const register = async (req, res) => {
     const otpEntry = new OTP({
       userID: newProfile._id,
       otp: hashedOtp,
-      expiresAt: Date.now() + 5 * 60 * 1000, // OTP valid for 5 minutes
-      type: 'emailVerification', // Set the type of OTP
+      expiresAt: Date.now() + 5 * 60 * 1000, 
+      type: 'emailVerification', 
     });
     await otpEntry.save();
 
@@ -52,6 +54,8 @@ const register = async (req, res) => {
 
 
 // Login function
+
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -70,12 +74,23 @@ const login = async (req, res) => {
       return res.status(400).json(createErrorResponse("Invalid credentials.", 400));
     }
 
-    res.status(200).json({ message: "Login successful." });
+    // Create token payload with important user data
+    const tokenPayload = {
+      id: profile._id,
+      email: profile.email,
+      role: profile.role,
+    };
+
+    // Generate token (set a secret key and an optional expiration time)
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ message: "Login successful.", token });
   } catch (error) {
     console.error(error);
     res.status(500).json(createErrorResponse("Server error", 500));
   }
 };
+
 
 module.exports = {
   register,

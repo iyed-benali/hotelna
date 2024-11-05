@@ -43,16 +43,12 @@ const ProfileSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["ADMIN", "CLIENT"],
+    enum: ["ADMIN", "CLIENT","MACHINE-OWNER"],
     default: "CLIENT",
   },
   verified: {
     type: Boolean,
     default: false, 
-  },
-  role: {
-    type: String,
-    default: "CLIENT",
   },
   token: {
     type: String,

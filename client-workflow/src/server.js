@@ -1,13 +1,13 @@
 
 const express = require('express');
-const mongoose = require('./config/db');
+const mongoose = require('../../auth-workflow/src/config/db');
 const router = require('./routes/routes')
 require('dotenv').config();
 
 
 const app = express();
 app.use(express.json());
-app.use("/auth-api",router)
+app.use("/client-api",router)
 
 
 
