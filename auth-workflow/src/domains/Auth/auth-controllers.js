@@ -1,64 +1,70 @@
 // controllers/authController.js
 const Profile = require("../../models/Auth/auth");
 const OTP = require("../../models/OTP/otp");
+const Client = require("../../models/Client/client");
 const mailSender = require("../../utils/mailsender");
 const bcrypt = require("bcryptjs");
 const { generateAndHashOTP } = require("../../utils/generate-hash-otp");
 const {createErrorResponse} = require('../../utils/error-handle')
 const jwt = require("jsonwebtoken");
 
-// Register function
-const register = async (req, res) => {
-  const { username, firstName, lastName, email, phone, password,role } = req.body;
+  // Register function
+  const register = async (req, res) => {
+    const { username, firstName, lastName, email, phone, password, role, fullName, location} = req.body;
+    try {
+      // Check if a profile with the same email already exists
+      const existingProfile = await Profile.findOne({ email });
+      if (existingProfile) {
+        return res.status(400).json(createErrorResponse("Email already exists.", 400));
+      }
+  
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-  try {
-    const existingProfile = await Profile.findOne({ email });
-    if (existingProfile) {
-      return res.status(400).json(createErrorResponse("Email already exists.", 400));
+      const newProfile = new Profile({
+        username,
+        firstName,
+        lastName,
+        email,
+        phone,
+        password: hashedPassword,
+        role,
+      });
+      await newProfile.save();
+      const newClient = new Client({
+        profileId: newProfile._id,
+        fullName : firstName + " " + lastName,
+        email,
+        password: hashedPassword,
+        location,
+        lat_long: { lat:0, long:0 },
+      });
+      await newClient.save();
+      const { otp, hashedOtp } = await generateAndHashOTP();
+      const otpEntry = new OTP({
+        userID: newProfile._id,
+        otp: hashedOtp,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+        type: 'emailVerification',
+      });
+      await otpEntry.save();
+      const emailBody = `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`;
+      await mailSender(email, "Your OTP Code", emailBody);
+  
+      res.status(201).json({ message: "User registered successfully. OTP sent to email." });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(createErrorResponse("Server error", 500));
     }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newProfile = new Profile({
-      username,
-      firstName,
-      lastName,
-      email,
-      phone,
-      password: hashedPassword,
-      role:role
-    });
-    await newProfile.save();
-
-    const { otp, hashedOtp } = await generateAndHashOTP();
-
-    const otpEntry = new OTP({
-      userID: newProfile._id,
-      otp: hashedOtp,
-      expiresAt: Date.now() + 5 * 60 * 1000, 
-      type: 'emailVerification', 
-    });
-    await otpEntry.save();
-
-    const emailBody = `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`;
-    await mailSender(email, "Your OTP Code", emailBody);
-
-    res.status(201).json({ message: "User registered successfully. OTP sent to email." });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(createErrorResponse("Server error", 500));
-  }
-};
-
-
-
-// Login function
+  };
+  
+  module.exports = { register };
+  
 
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const profile = await Profile.findOne({ email });
     if (!profile) {

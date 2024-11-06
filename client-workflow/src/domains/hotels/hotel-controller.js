@@ -60,7 +60,7 @@ exports.getHotelById = async (req, res) => {
   const { id } = req.params; // Hotel ID from the URL
 
   try {
-    const hotel = await Hotel.findById(id).populate('profileId'); // Populates the profileId field if needed
+    const hotel = await Hotel.findById(id).populate('profileId'); 
     if (!hotel) {
       return res.status(404).json({ ok: false, message: "Hotel not found." });
     }
