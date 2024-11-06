@@ -13,7 +13,7 @@ const verifyAdmin = (req, res, next) => {
     }
     req.user = decoded;
     console.log("Decoded token:", decoded);
-    if (decoded.role !== "ADMIN") {
+    if (decoded.role !== "admin") {
       return res.status(403).json({ message: "Forbidden: Admins only." });
     }
     next();

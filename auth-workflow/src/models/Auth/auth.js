@@ -19,6 +19,11 @@ const profileSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  role: {
+    type: String,
+    enum: ['hotel owner', 'admin', 'client'], // Enum for roles
+    default: 'client', // Default role is 'client'
+  },
  
 }, { timestamps: true });
 

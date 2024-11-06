@@ -12,6 +12,7 @@ const mailSender = async (email, title, body) => {
       }
     });
 
+    
     let info = await transporter.sendMail({
       from: 'www.sandeepdev.me - Sandeep Singh',
       to: email,

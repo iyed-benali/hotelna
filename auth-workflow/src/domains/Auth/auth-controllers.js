@@ -10,7 +10,7 @@ const jwt = require("jsonwebtoken");
 
   // Register function
   const register = async (req, res) => {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password , role } = req.body;
     console.log(req.body); // Add this for debugging
     try {
       // Check if email already exists
@@ -28,6 +28,7 @@ const jwt = require("jsonwebtoken");
         fullName,
         email,
         password: hashedPassword,
+        role
       });
   
       
