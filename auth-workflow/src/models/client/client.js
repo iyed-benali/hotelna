@@ -30,6 +30,7 @@ const ClientSchema = new Schema({
   },
   location: {
     type: String,
+    default:""
   },
   lat_long: {
     lat: { type: Number },

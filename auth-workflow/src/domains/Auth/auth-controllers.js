@@ -10,9 +10,10 @@ const jwt = require("jsonwebtoken");
 
   // Register function
   const register = async (req, res) => {
-    const { username, firstName, lastName, email, phone, password, role, location} = req.body;
+    const { fullName, email, password } = req.body;
+    console.log(req.body); // Add this for debugging
     try {
-      
+      // Check if email already exists
       const existingProfile = await Profile.findOne({ email });
       if (existingProfile) {
         return res.status(400).json(createErrorResponse("Email already exists.", 400));
@@ -21,34 +22,32 @@ const jwt = require("jsonwebtoken");
       // Hash the password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
-
-      const newProfile = new Profile({
-        username,
-        firstName,
-        lastName,
+  
+      // Create the profile first
+      const newProfile = await Profile.create({
+        fullName,
         email,
-        phone,
         password: hashedPassword,
-        role,
       });
-      await newProfile.save();
-      const newClient = new Client({
+  
+      
+      const newClient = await Client.create({
         profileId: newProfile._id,
-        fullName : firstName + " " + lastName,
+        fullName,
         email,
         password: hashedPassword,
-        location,
-        lat_long: { lat:0, long:0 },
       });
-      await newClient.save();
+  
+      // Generate OTP and send email for verification
       const { otp, hashedOtp } = await generateAndHashOTP();
       const otpEntry = new OTP({
         userID: newProfile._id,
         otp: hashedOtp,
-        expiresAt: Date.now() + 5 * 60 * 1000,
+        expiresAt: Date.now() + 5 * 60 * 1000,  
         type: 'emailVerification',
       });
       await otpEntry.save();
+  
       const emailBody = `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`;
       await mailSender(email, "Your OTP Code", emailBody);
   
@@ -59,7 +58,8 @@ const jwt = require("jsonwebtoken");
     }
   };
   
-  module.exports = { register };
+  
+  
   
 
 
