@@ -10,9 +10,9 @@ const jwt = require("jsonwebtoken");
 
   // Register function
   const register = async (req, res) => {
-    const { username, firstName, lastName, email, phone, password, role, fullName, location} = req.body;
+    const { username, firstName, lastName, email, phone, password, role, location} = req.body;
     try {
-      // Check if a profile with the same email already exists
+      
       const existingProfile = await Profile.findOne({ email });
       if (existingProfile) {
         return res.status(400).json(createErrorResponse("Email already exists.", 400));
