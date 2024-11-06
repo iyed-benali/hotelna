@@ -1,5 +1,5 @@
-const Service = require("../../../../auth-workflow/src/models/service/service");
-const Client = require("../../../../auth-workflow/src/models/client/client");
+const Service = require("../../models/Service/service");
+const Client = require("../../models/Client/client");
 const { createErrorResponse } = require("../../utils/error-handle");
 const bcrypt = require('bcrypt')
 

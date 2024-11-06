@@ -1,8 +1,9 @@
 
-const express = require('express');
-const mongoose = require('../../auth-workflow/src/config/db');
-const router = require('./routes/routes')
 require('dotenv').config();
+require('./config/db');
+const express = require('express');
+const router = require('./routes/routes')
+
 
 
 const app = express();

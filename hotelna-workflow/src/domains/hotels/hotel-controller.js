@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 
-const  Hotel  = require("../../../../auth-workflow/src/models/hotel/hotel");
-const Service = require('../../../../auth-workflow/src/models/service/service')
+const  Hotel  = require("../../models/Hotel/hotel");
+const Service = require('../../models/Service/service')
 const createErrorResponse = require('../../utils/error-handle')
 exports.getHotelById = async (req, res) => {
   const { id } = req.params; 

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {createServiceRequest,getClientServices,modifyPassword,deletePassword,modifyClientDetails} = require("./client-controllers"); 
+const {createServiceRequest,getClientServices,modifyPassword,modifyClientDetails} = require("./client-controllers"); 
 const verifyToken = require('../../middlwares/verify-token')
 
 

@@ -1,10 +1,10 @@
-const  Hotel  = require("../../../../auth-workflow/src/models/hotel/hotel");
-const  Profile  = require("../../../../auth-workflow/src/models/Auth/auth");
+const  Hotel  = require("../../models/Hotel/hotel");
+const  Profile  = require("../../models/Auth/auth");
 const  mailSender  = require("../../utils/mail-sender");
 const {createErrorResponse} = require('../../utils/error-handle')
 const { generateRandomPassword } = require('../../utils/generate-password');
 const bcrypt = require('bcrypt')
-const Client = require('../../../../auth-workflow/src/models/client/client')
+const Client = require('../../models/Client/client')
 exports.createHotel = async (req, res) => {
     const { 
       profileId, 
