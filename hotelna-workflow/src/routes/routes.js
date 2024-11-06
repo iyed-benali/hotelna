@@ -1,11 +1,13 @@
 const express = require("express");
 const hotelRoutes= require('../domains/hotels/hotel-routes')
-const servicesRoutes = require('../domains/services/services-routes')
+
 const adminRoutes = require('../domains/admin/admin-routes')
+const clinetRoutes = require('../domains/clients/client-routes')
 const router = express.Router();
 
 router.use('/hotel',hotelRoutes)
 router.use('/admin',adminRoutes)
-router.use('/services',servicesRoutes)
+router.use('/client',clinetRoutes)
+
 
 module.exports = router;

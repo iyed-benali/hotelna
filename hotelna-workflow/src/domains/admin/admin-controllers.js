@@ -152,4 +152,5 @@ exports.createHotel = async (req, res) => {
       res.status(500).json(createErrorResponse("Server error", 500));
     }
   };
+  
         

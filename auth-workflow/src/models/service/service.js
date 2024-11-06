@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+
 const ServiceSchema = new Schema({
   clientId: {
     type: Schema.Types.ObjectId,
@@ -26,12 +28,18 @@ const ServiceSchema = new Schema({
   },
   roomNumber: {
     type: Number,
-    required: true, // Set required to true if necessary
+    required: true,
   },
   status: {
     type: String,
-    enum: ["pending", "in_progress", "completed", "canceled"], 
+    enum: ["pending", "in_progress", "completed", "canceled"],
     default: "pending",
+  },
+  cancelDescription: {
+    type: String,
+    required: function () {
+      return this.status === "canceled";
+    },
   },
 });
 
