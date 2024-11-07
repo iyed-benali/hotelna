@@ -11,19 +11,19 @@ const jwt = require("jsonwebtoken");
   // Register function
   const register = async (req, res) => {
     const { fullName, email, password , role } = req.body;
-    console.log(req.body); // Add this for debugging
+    console.log(req.body);
     try {
-      // Check if email already exists
+      
       const existingProfile = await Profile.findOne({ email });
       if (existingProfile) {
         return res.status(400).json(createErrorResponse("Email already exists.", 400));
       }
   
-      // Hash the password
+
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
   
-      // Create the profile first
+     
       const newProfile = await Profile.create({
         fullName,
         email,
@@ -39,7 +39,7 @@ const jwt = require("jsonwebtoken");
         password: hashedPassword,
       });
   
-      // Generate OTP and send email for verification
+     
       const { otp, hashedOtp } = await generateAndHashOTP();
       const otpEntry = new OTP({
         userID: newProfile._id,
@@ -71,24 +71,19 @@ const login = async (req, res) => {
     if (!profile) {
       return res.status(404).json(createErrorResponse("Profile not found.", 404));
     }
-
     if (!profile.verified) {
       return res.status(403).json(createErrorResponse("Please verify your email before logging in.", 403));
     }
-
     const isMatch = await bcrypt.compare(password, profile.password);
     if (!isMatch) {
       return res.status(400).json(createErrorResponse("Invalid credentials.", 400));
-    }
-
-    // Create token payload with important user data
+    }   
     const tokenPayload = {
       id: profile._id,
       email: profile.email,
       role: profile.role,
     };
 
-    // Generate token (set a secret key and an optional expiration time)
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({ message: "Login successful.", token });

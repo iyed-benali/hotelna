@@ -85,6 +85,14 @@ const HotelSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  sounds: {
+    type: Boolean,
+    default: true,
+  },
+  notifications: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 HotelSchema.pre("save", async function (next) {

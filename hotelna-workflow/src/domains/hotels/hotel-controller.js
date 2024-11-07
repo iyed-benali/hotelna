@@ -140,3 +140,40 @@ exports.modifyStatus = async (req, res) => {
     res.status(500).json({ ok: false, message: "Server error." });
   }
 };
+
+exports.toggleSounds = async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    
+    // Find the hotel by ID and toggle the sounds setting
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+
+    hotel.sounds = !hotel.sounds; // Toggle sounds
+    await hotel.save();
+    
+    res.status(200).json({ message: `Sounds have been ${hotel.sounds ? "enabled" : "disabled"}`, sounds: hotel.sounds });
+  } catch (error) {
+    res.status(500).json({ message: "Error toggling sounds", error: error.message });
+  }
+};
+exports.toggleNotifications = async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    
+    // Find the hotel by ID and toggle the notifications setting
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+
+    hotel.notifications = !hotel.notifications; // Toggle notifications
+    await hotel.save();
+    
+    res.status(200).json({ message: `Notifications have been ${hotel.notifications ? "enabled" : "disabled"}`, notifications: hotel.notifications });
+  } catch (error) {
+    res.status(500).json({ message: "Error toggling notifications", error: error.message });
+  }
+};

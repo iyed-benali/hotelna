@@ -86,7 +86,7 @@ exports.createHotel = async (req, res) => {
   };
   exports.getAllClients = async (req, res) => {
     try {
-      const clients = await Client.find();  // Assuming you have a Client model
+      const clients = await Client.find();  
       res.status(200).json(clients);
     } catch (error) {
       console.error(error);
@@ -94,7 +94,7 @@ exports.createHotel = async (req, res) => {
     }
   };
   exports.deleteHotel = async (req, res) => {
-    const { hotelId } = req.params;  // Assuming the hotel ID is passed as a URL parameter
+    const { hotelId } = req.params;  
     try {
       const hotel = await Hotel.findByIdAndDelete(hotelId);
       if (!hotel) {
@@ -107,7 +107,7 @@ exports.createHotel = async (req, res) => {
     }
   };
   exports.updateHotel = async (req, res) => {
-    const { hotelId } = req.params;  // Assuming the hotel ID is passed as a URL parameter
+    const { hotelId } = req.params; 
     const { 
       hotelName, 
       hotelAddress, 
@@ -139,7 +139,7 @@ exports.createHotel = async (req, res) => {
           email, 
           location: { lat, long }
         },
-        { new: true }  // To return the updated document
+        { new: true }
       );
   
       if (!updatedHotel) {
