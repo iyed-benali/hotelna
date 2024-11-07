@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const QRCode = require("qrcode"); // Import QR code package
 const Schema = mongoose.Schema;
 
 const HotelSchema = new Schema({
@@ -87,18 +88,43 @@ const HotelSchema = new Schema({
   },
   sounds: {
     type: Boolean,
-    default: true,
+    default: false,
   },
   notifications: {
     type: Boolean,
-    default: true,
+    default: false,
+  },
+  qrCodeUrl: {
+    type: String,
   },
 });
 
+// Pre-save hook for hashing password and generating QR code
 HotelSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  // Hash the password if it has been modified
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+
+ 
+  if (this.isNew) {
+    try {
+      
+        const qrData = {
+          hotelCode: this.hotelCode,
+          hotelName: this.hotelName,
+          hotelPhone: this.hotelPhone,
+        };
+      
+     
+      const qrCodeUrl = await QRCode.toDataURL(JSON.stringify(qrData));
+      this.qrCodeUrl = qrCodeUrl; 
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   next();
 });
 
